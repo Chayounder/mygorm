@@ -1,0 +1,12 @@
+{
+  "Example": {
+    "Name": [
+      "Tux"
+    ],
+    "Style": [
+      "widgety",
+      "fidgety"
+    ],
+    "Enabled": 1
+  }
+}
