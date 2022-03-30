@@ -84,23 +84,11 @@ var appendDevs = []Device{
 
 
 func TestInitDb(t *testing.T) {
-	err := system.LoadDbConfiguration("..\\config\\config.yaml")
-	if err != nil {
-		t.Log("load db config error:", err)
-		return
-	}
-
-	db, err := OpenDb()
-	if err != nil {
-		t.Log("connect db error:", err)
-		return
-	}
-
+	_ = system.LoadDbConfiguration("..\\config\\config.yaml")
+	db, _ := OpenDb()
 	// 如果数据库中的表已经存在，调用AutoMigrate函数会怎样？
-	err = InitDb(db)
-	if err != nil {
-		t.Log("init db error:", err)
-	}
+	_ = InitDb(db)
+
 
 	// OpenDb后是否需要close，close后是否还能操作数据库
 

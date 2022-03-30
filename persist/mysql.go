@@ -75,7 +75,8 @@ func CloseDB(gormDb *gorm.DB) {
 	_ = sqlDb.Close() // 关闭链接
 }
 
-func InitDb(db *gorm.DB) error {
+func InitDb(db *gorm.DB) (err error) {
+	//db.WithContext()
 	para := "ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='device info'"
 	return db.Set("gorm:table_options", para).AutoMigrate(&Device{}, &Tunnel{})
 }
@@ -110,9 +111,16 @@ func (dev *Device) DeletedDeviceAssociation(db *gorm.DB) error {
 	var err error = nil
 	size := len(dev.Tunnels)
 	tunnels := dev.Tunnels
-	for i := 0; i < size && err == nil; i++ {
-		err = deleteTable(db, &Tunnel{}, "url_cgi = ?", tunnels[i].URLCgi)
+
+	tx := db.Begin()
+	tx.SavePoint("DeletedDeviceAssociation")
+	for i := 0; i < size; i++ {
+		if err = deleteTable(tx, &Tunnel{}, "url_cgi = ?", tunnels[i].URLCgi); err != nil {
+			tx.RollbackTo("DeletedDeviceAssociation")
+			return err
+		}
 	}
+	tx.Commit()
 	return err
 }
 
@@ -129,12 +137,26 @@ func (dev *Device) UpdateDeviceByID(db *gorm.DB) error {
 	if len(dev.Cid) == 0 {
 		return errors.New(PkgName + "condition [id] is nil")
 	}
+
+	tx := db.Begin()
+	tx.SavePoint("UpdateDeviceByID")
+	// 考虑使用会话模式或者事务，保证delete和update安全
+	// 会话模式 tx := db.Session
+	// 事务db.Transaction;手动事务：db.Begin()和db.commit
+
 	// 1.从 'tunnels' 表中删除该设备已有的关联数据
-	if err := deleteTable(db, &Tunnel{}, "fk_cid = ?",dev.Cid); err != nil {
+	if err := deleteTable(tx, &Tunnel{}, "fk_cid = ?",dev.Cid); err != nil {
+		tx.RollbackTo("UpdateDeviceByID")
 		return err
 	}
+
 	// 2. 将新的dev数据更新到 'devices' 表中，将Tunnels更新到 'tunnels' 表中
-	return updateTable(db, dev, "cid = ?", dev.Cid)
+	if err := updateTable(tx, dev, "cid = ?", dev.Cid); err != nil {
+		tx.RollbackTo("UpdateDeviceByID")
+		return err
+	}
+	tx.Commit()
+	return nil
 }
 
 // QueryDevicesByClientID 根据ID查询设备数据，dev.Cid不能为nil
@@ -210,6 +232,7 @@ func appendAssociation(db *gorm.DB, tbl interface{}, assName string, assTbl inte
 
 // updateTable 根据条件更新表中的数据
 func updateTable(db *gorm.DB, tbl, cond interface{}, arg interface{}) error {
+	// Session(&gorm.Session{FullSaveAssociations: true})是否需要？？
 	return db.Where(cond, arg).Session(&gorm.Session{FullSaveAssociations: true}).Updates(tbl).Error
 }
 
