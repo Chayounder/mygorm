@@ -184,12 +184,13 @@ func TestUpdateDevice(t *testing.T) {
 		return
 	}
 
-	device := updateDevs[0]
-	err = device.UpdateDeviceByID(db)
-	if err != nil {
-		t.Log("UpdateDeviceByID error:", err)
+	devices := updateDevs
+	for i := 1; i < len(devices); i++ {
+		err = devices[i].UpdateDeviceByID(db)
+		if err != nil {
+			t.Log("UpdateDeviceByID error:", err)
+		}
 	}
-
 	CloseDB(db)
 }
 
@@ -232,7 +233,7 @@ func TestDeletedDeviceAssociation(t *testing.T) {
 
 	dev := &Device {   // dev-tun -> dev-tun
 		/*ClientID: "pouwer", SN: "M749201012400366",*/
-		Tunnels: []Tunnel{{URLCgi: "http://M749201012400366-1.web.ip-com.com.cn:8080"},{URLCgi: "http://M749201012400366-2.web.ip-com.com.cn:8080"}},
+		Tunnels: []Tunnel{{URLCgi: "http://apd-MC07101412800052-1.web.ip-com.com.cn:8080"},{URLCgi: "http://upt-MC07101412800052-1.web.ip-com.com.cn:8080"}},
 	}
 	/*,{URLCgi: "http://apd-M749201012400366-2.web.ip-com.com.cn:8080"}*/
 	err = dev.DeletedDeviceAssociation(db)
@@ -273,7 +274,7 @@ func TestQueryDevice(t *testing.T) {
 
 	fmt.Println("=============================")
 
-	devices, err = QueryOnlineDevicesByVendor(db, "Tenda", "")
+	devices, err = QueryDevicesByVendor(db, "Tenda", "")
 	//fmt.Println(devices)
 	for _, dev := range devices {
 		fmt.Println(dev)
