@@ -9,7 +9,7 @@ git remote add origin https://github.com/Chayounder/mygorm.git
 git push -u origin main
 
 
-
+#创建ssh秘钥
 $ ssh-keygen -t rsa -C "2442512720@qq.com"
 Generating public/private rsa key pair.
 Enter file in which to save the key (/c/Users/l0042884/.ssh/id_rsa): /c/Users/l0042884/.ssh/github_rsa
