@@ -30,7 +30,7 @@ type Tunnel struct {
 type Device struct {
 	//gorm.Model
 	//BaseModel
-	//ID          uint     `gorm:"column:id;primaryKey" json:"id,omitempty"` // test
+	ID          uint     `gorm:"column:id;autoIncrement;primaryKey" json:"id,omitempty"` // test
 	Cid         string   `gorm:"column:cid;index:idx_sn;primaryKey"  json:"client_id,omitempty"`
 	SN          string   `gorm:"column:sn" json:"sn,omitempty"`
 	Vendor      string   `gorm:"column:vendor;index:idx_vendor" json:"vendor,omitempty"`
@@ -46,10 +46,7 @@ type Device struct {
 	Tunnels     []Tunnel `gorm:"foreignKey:FkCid;references:Cid;constraint:OnDelete:CASCADE,OnUpdate:CASCADE" json:"tunnels,omitempty"` // 以DevSN作为从表Tunnel的外键，引用主表Device的SN字段
 }
 
-type Vendor struct {
-	Name   string
-	DevNum uint32
-}
+
 
 type Area struct {
 	Province string
