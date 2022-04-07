@@ -441,15 +441,17 @@ func TestConcurrencyInsert(t *testing.T) {
     offClient = newControlClient()
     stop = time.Now().Unix() + RunTime * 60
 
+	wg.Add(1)
+	go testQuery(t, &wg)
     wg.Add(1)
     go testInsert(t, &wg)
-/*  time.Sleep(time.Second * 5)
+    time.Sleep(time.Second * 5)
     wg.Add(1)
     go testQuery(t, &wg)
     wg.Add(1)
     go testUpdate(t, &wg)
     wg.Add(1)
-    go testDelete(t, &wg)*/
+    go testDelete(t, &wg)
 
     wg.Wait()
     t.Log("all goroutine finish")
